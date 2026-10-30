@@ -1,0 +1,414 @@
+name: Build APK
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Create Android project
+        run: |
+          set -e
+          f=$(ls -- *.html 2>/dev/null | head -n1)
+          if [ -z "$f" ]; then echo "ERROR: upload the program html file to the repo main page"; exit 1; fi
+          echo "Using: $f"
+          mkdir -p app/src/main/assets app/src/main/java/com/daftar/app app/src/main/res/values app/src/main/res/drawable app/src/main/res/mipmap-anydpi-v26
+          cp -- "$f" app/src/main/assets/index.html
+          echo "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" | base64 -d > app/daftar.keystore
+          cat > app/build.gradle <<'EOF_DAFTAR'
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'com.daftar.app'
+              compileSdk 34
+
+              defaultConfig {
+                  applicationId 'com.daftar.app'
+                  minSdk 26
+                  targetSdk 34
+                  versionCode 1
+                  versionName '1.0'
+              }
+
+              signingConfigs {
+                  main {
+                      storeFile file('daftar.keystore')
+                      storePassword 'daftar2026'
+                      keyAlias 'daftar'
+                      keyPassword 'daftar2026'
+                  }
+              }
+
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.main
+                      minifyEnabled false
+                  }
+                  debug {
+                      signingConfig signingConfigs.main
+                  }
+              }
+
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+
+              lint {
+                  abortOnError false
+                  checkReleaseBuilds false
+              }
+          }
+
+          dependencies {
+              implementation 'androidx.webkit:webkit:1.11.0'
+          }
+          EOF_DAFTAR
+          cat > app/src/main/AndroidManifest.xml <<'EOF_DAFTAR'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+              <uses-permission android:name="android.permission.INTERNET" />
+
+              <application
+                  android:allowBackup="false"
+                  android:icon="@mipmap/ic_launcher"
+                  android:roundIcon="@mipmap/ic_launcher_round"
+                  android:label="@string/app_name"
+                  android:supportsRtl="true"
+                  android:theme="@style/AppTheme"
+                  android:usesCleartextTraffic="false">
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize|uiMode|density|locale|layoutDirection"
+                      android:windowSoftInputMode="adjustResize">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF_DAFTAR
+          cat > app/src/main/java/com/daftar/app/MainActivity.java <<'EOF_DAFTAR'
+          package com.daftar.app;
+
+          import android.annotation.SuppressLint;
+          import android.app.Activity;
+          import android.content.ContentValues;
+          import android.content.Intent;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.os.Environment;
+          import android.print.PrintAttributes;
+          import android.print.PrintDocumentAdapter;
+          import android.print.PrintManager;
+          import android.provider.MediaStore;
+          import android.util.Base64;
+          import android.view.WindowManager;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.URLUtil;
+          import android.webkit.ValueCallback;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebResourceResponse;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.widget.Toast;
+
+          import androidx.webkit.WebViewAssetLoader;
+
+          import java.io.File;
+          import java.io.FileOutputStream;
+          import java.io.OutputStream;
+
+          public class MainActivity extends Activity {
+
+              private static final String HOST = "appassets.androidplatform.net";
+              private static final String HOME = "https://" + HOST + "/assets/index.html";
+              private static final int FILE_REQ = 7;
+
+              private static final String PRINT_JS =
+                      "(function(){window.print=function(){try{window.dispatchEvent(new Event('beforeprint'))}catch(e){};Android.print()}})()";
+
+              private WebView web;
+              private ValueCallback<Uri[]> filePathCb;
+
+              private static String esc(String s) {
+                  if (s == null) return "";
+                  return s.replace("\\", "\\\\").replace("'", "\\'").replace("\n", " ").replace("\r", " ");
+              }
+
+              @SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+                  web = new WebView(this);
+                  setContentView(web);
+
+                  final WebViewAssetLoader loader = new WebViewAssetLoader.Builder()
+                          .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+                          .build();
+
+                  WebSettings s = web.getSettings();
+                  s.setJavaScriptEnabled(true);
+                  s.setDomStorageEnabled(true);
+                  s.setDatabaseEnabled(true);
+                  s.setAllowFileAccess(false);
+                  s.setAllowContentAccess(false);
+                  s.setTextZoom(100);
+                  s.setSupportZoom(false);
+                  s.setBuiltInZoomControls(false);
+
+                  web.addJavascriptInterface(new Bridge(), "Android");
+
+                  web.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                          return loader.shouldInterceptRequest(request.getUrl());
+                      }
+
+                      @Override
+                      public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                          Uri u = request.getUrl();
+                          String scheme = u.getScheme() == null ? "" : u.getScheme();
+                          if (HOST.equals(u.getHost()) || scheme.equals("blob") || scheme.equals("about") || scheme.equals("data")) {
+                              return false;
+                          }
+                          try {
+                              startActivity(new Intent(Intent.ACTION_VIEW, u));
+                          } catch (Exception ignored) {
+                          }
+                          return true;
+                      }
+
+                      @Override
+                      public void onPageFinished(WebView view, String url) {
+                          view.evaluateJavascript(PRINT_JS, null);
+                      }
+                  });
+
+                  web.setWebChromeClient(new WebChromeClient() {
+                      @Override
+                      public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams p) {
+                          if (filePathCb != null) filePathCb.onReceiveValue(null);
+                          filePathCb = cb;
+                          try {
+                              startActivityForResult(p.createIntent(), FILE_REQ);
+                          } catch (Exception e) {
+                              filePathCb = null;
+                              return false;
+                          }
+                          return true;
+                      }
+                  });
+
+                  web.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
+                      if (url != null && url.startsWith("blob:")) {
+                          String name = URLUtil.guessFileName(url, contentDisposition, mimeType);
+                          String js = "(function(){var x=new XMLHttpRequest();x.open('GET','" + esc(url) + "',true);"
+                                  + "x.responseType='blob';x.onload=function(){var r=new FileReader();"
+                                  + "r.onloadend=function(){Android.saveBase64(r.result.split(',')[1],'" + esc(mimeType) + "','" + esc(name) + "')};"
+                                  + "r.readAsDataURL(x.response)};x.send()})()";
+                          web.evaluateJavascript(js, null);
+                      }
+                  });
+
+                  if (savedInstanceState == null) {
+                      web.loadUrl(HOME);
+                  } else {
+                      web.restoreState(savedInstanceState);
+                  }
+              }
+
+              @Override
+              protected void onSaveInstanceState(Bundle outState) {
+                  super.onSaveInstanceState(outState);
+                  web.saveState(outState);
+              }
+
+              @Override
+              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                  if (requestCode == FILE_REQ) {
+                      if (filePathCb != null) {
+                          filePathCb.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+                          filePathCb = null;
+                      }
+                      return;
+                  }
+                  super.onActivityResult(requestCode, resultCode, data);
+              }
+
+              @Override
+              public void onBackPressed() {
+                  String js = "(function(){try{if(typeof view!=='undefined'&&view!=='home'&&typeof go==='function'){go('home');return 'x'}}catch(e){}return 'n'})()";
+                  web.evaluateJavascript(js, new ValueCallback<String>() {
+                      @Override
+                      public void onReceiveValue(String r) {
+                          if (r == null || r.contains("n")) {
+                              MainActivity.super.onBackPressed();
+                          }
+                      }
+                  });
+              }
+
+              private void toast(final String m) {
+                  runOnUiThread(() -> Toast.makeText(MainActivity.this, m, Toast.LENGTH_LONG).show());
+              }
+
+              private class Bridge {
+                  @JavascriptInterface
+                  public void saveBase64(String b64, String mime, String name) {
+                      try {
+                          byte[] data = Base64.decode(b64, Base64.DEFAULT);
+                          if (name == null || name.length() == 0) name = "daftar-" + System.currentTimeMillis();
+                          if (mime == null || mime.length() == 0) mime = "application/octet-stream";
+                          if (Build.VERSION.SDK_INT >= 29) {
+                              ContentValues v = new ContentValues();
+                              v.put(MediaStore.Downloads.DISPLAY_NAME, name);
+                              v.put(MediaStore.Downloads.MIME_TYPE, mime);
+                              v.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                              Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, v);
+                              if (uri == null) throw new Exception("no uri");
+                              OutputStream o = getContentResolver().openOutputStream(uri);
+                              o.write(data);
+                              o.close();
+                              toast("تم حفظ الملف في التحميلات: " + name);
+                          } else {
+                              File d = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+                              File f = new File(d, name);
+                              FileOutputStream o = new FileOutputStream(f);
+                              o.write(data);
+                              o.close();
+                              toast("تم حفظ الملف: " + f.getAbsolutePath());
+                          }
+                      } catch (Exception e) {
+                          toast("تعذر حفظ الملف");
+                      }
+                  }
+
+                  @JavascriptInterface
+                  public void print() {
+                      runOnUiThread(() -> {
+                          PrintManager pm = (PrintManager) getSystemService(PRINT_SERVICE);
+                          PrintDocumentAdapter a = web.createPrintDocumentAdapter("دفتر");
+                          pm.print("دفتر", a, new PrintAttributes.Builder().build());
+                      });
+                  }
+              }
+          }
+          EOF_DAFTAR
+          cat > app/src/main/res/drawable/ic_fg.xml <<'EOF_DAFTAR'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp"
+              android:height="108dp"
+              android:viewportWidth="108"
+              android:viewportHeight="108">
+              <path
+                  android:fillColor="#FFFFFF"
+                  android:pathData="M36,30 h36 a4,4 0 0 1 4,4 v40 a4,4 0 0 1 -4,4 h-36 a4,4 0 0 1 -4,-4 v-40 a4,4 0 0 1 4,-4 z" />
+              <path
+                  android:fillColor="#0E5A52"
+                  android:pathData="M40,40 h28 v4 h-28 z" />
+              <path
+                  android:fillColor="#0E5A52"
+                  android:pathData="M40,50 h28 v4 h-28 z" />
+              <path
+                  android:fillColor="#0E5A52"
+                  android:pathData="M40,60 h18 v4 h-18 z" />
+          </vector>
+          EOF_DAFTAR
+          cat > app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'EOF_DAFTAR'
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@color/ic_bg" />
+              <foreground android:drawable="@drawable/ic_fg" />
+          </adaptive-icon>
+          EOF_DAFTAR
+          cat > app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml <<'EOF_DAFTAR'
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@color/ic_bg" />
+              <foreground android:drawable="@drawable/ic_fg" />
+          </adaptive-icon>
+          EOF_DAFTAR
+          cat > app/src/main/res/values/colors.xml <<'EOF_DAFTAR'
+          <resources>
+              <color name="ic_bg">#0E5A52</color>
+              <color name="app_bg">#EEF3F1</color>
+          </resources>
+          EOF_DAFTAR
+          cat > app/src/main/res/values/strings.xml <<'EOF_DAFTAR'
+          <resources>
+              <string name="app_name">دفتر</string>
+          </resources>
+          EOF_DAFTAR
+          cat > app/src/main/res/values/styles.xml <<'EOF_DAFTAR'
+          <resources>
+              <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+                  <item name="android:windowBackground">@color/app_bg</item>
+                  <item name="android:statusBarColor">#0C2F2C</item>
+                  <item name="android:navigationBarColor">#0C2F2C</item>
+              </style>
+          </resources>
+          EOF_DAFTAR
+          cat > build.gradle <<'EOF_DAFTAR'
+          plugins {
+              id 'com.android.application' version '8.5.2' apply false
+          }
+          EOF_DAFTAR
+          cat > gradle.properties <<'EOF_DAFTAR'
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          EOF_DAFTAR
+          cat > settings.gradle <<'EOF_DAFTAR'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "Daftar"
+          include ':app'
+          EOF_DAFTAR
+      - name: Build APK
+        run: gradle assembleRelease --no-daemon
+      - name: Save APK as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Daftar-APK
+          path: app/build/outputs/apk/release/*.apk
+      - name: Publish release with APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Daftar build ${{ github.run_number }}
+          files: app/build/outputs/apk/release/*.apk
